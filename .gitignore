@@ -1,0 +1,24 @@
+# Java / Maven
+apps/api/target/
+apps/api/.mvn/wrapper/maven-wrapper.jar
+*.class
+*.jar
+!apps/api/mvnw
+!apps/api/mvnw.cmd
+
+# Node / Next.js
+apps/web/node_modules/
+apps/web/.next/
+apps/web/out/
+apps/web/.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.suo
+*.user
