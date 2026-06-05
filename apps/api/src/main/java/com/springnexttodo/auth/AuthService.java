@@ -33,7 +33,7 @@ public class AuthService {
         return AuthResponse.from(getUser(email));
     }
 
-    User getUser(String email) {
+    public User getUser(String email) {
         return userRepository.findByEmail(email)
             .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("User not found: " + email));
     }
