@@ -43,7 +43,6 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("POST", "/auth/register").permitAll()
                 .requestMatchers("POST", "/auth/login").permitAll()
-                .requestMatchers("/h2-console/**").permitAll()
                 .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex
@@ -53,7 +52,6 @@ public class SecurityConfig {
                     objectMapper.writeValue(response.getWriter(), ApiError.of(401, "Unauthorized"));
                 })
             )
-            .headers(headers -> headers.frameOptions(frame -> frame.disable())) // H2 console uses iframes
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

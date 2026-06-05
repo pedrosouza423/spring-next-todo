@@ -10,8 +10,7 @@ spring:
 
   h2:
     console:
-      enabled: true
-      path: /h2-console
+      enabled: false
 
   jpa:
     hibernate:
@@ -26,5 +25,5 @@ server:
 
 app:
   jwt:
-    secret: "Z3VhcmRhZXNzZXNlZ3JlZG9tdWl0b2JlbXBvcmZhdm9yYXF1aQ=="
+    secret: "${JWT_SECRET:dev-only-secret-change-before-any-real-deploy!!}"
     expiration-ms: 86400000
