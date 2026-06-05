@@ -1,4 +1,4 @@
-import { Task, User } from "@/lib/api";
+import { Task, Category, User } from "@/lib/api";
 import { TaskList } from "@/components/tasks/TaskList";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { CheckSquare } from "lucide-react";
@@ -6,11 +6,25 @@ import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+
 async function getTasks(authCookie: string | undefined): Promise<Task[]> {
   if (!authCookie) return [];
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
-    const res = await fetch(`${apiUrl}/tasks`, {
+    const res = await fetch(`${API_URL}/tasks`, {
+      headers: { Cookie: `auth_token=${authCookie}` },
+      cache: "no-store",
+    });
+    return res.ok ? res.json() : [];
+  } catch {
+    return [];
+  }
+}
+
+async function getCategories(authCookie: string | undefined): Promise<Category[]> {
+  if (!authCookie) return [];
+  try {
+    const res = await fetch(`${API_URL}/categories`, {
       headers: { Cookie: `auth_token=${authCookie}` },
       cache: "no-store",
     });
@@ -23,8 +37,7 @@ async function getTasks(authCookie: string | undefined): Promise<Task[]> {
 async function getCurrentUser(authCookie: string | undefined): Promise<User | null> {
   if (!authCookie) return null;
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
-    const res = await fetch(`${apiUrl}/auth/me`, {
+    const res = await fetch(`${API_URL}/auth/me`, {
       headers: { Cookie: `auth_token=${authCookie}` },
       cache: "no-store",
     });
@@ -38,8 +51,9 @@ export default async function HomePage() {
   const cookieStore = await cookies();
   const authCookie = cookieStore.get("auth_token")?.value;
 
-  const [tasks, user] = await Promise.all([
+  const [tasks, categories, user] = await Promise.all([
     getTasks(authCookie),
+    getCategories(authCookie),
     getCurrentUser(authCookie),
   ]);
 
@@ -55,7 +69,7 @@ export default async function HomePage() {
       </header>
 
       <div className="flex-1 max-w-xl mx-auto w-full px-4 py-6">
-        <TaskList initialTasks={tasks} />
+        <TaskList initialTasks={tasks} categories={categories} />
       </div>
     </main>
   );

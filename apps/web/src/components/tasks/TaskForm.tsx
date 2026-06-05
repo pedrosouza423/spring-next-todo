@@ -4,15 +4,18 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
-import { Task, api } from "@/lib/api";
+import { Task, Category, api } from "@/lib/api";
+import { CategorySelector } from "./CategorySelector";
 
 interface TaskFormProps {
   onCreated: (task: Task) => void;
+  categories: Category[];
 }
 
-export function TaskForm({ onCreated }: TaskFormProps) {
+export function TaskForm({ onCreated, categories }: TaskFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [categoryId, setCategoryId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [expanded, setExpanded] = useState(false);
@@ -22,10 +25,15 @@ export function TaskForm({ onCreated }: TaskFormProps) {
     if (!title.trim()) { setError("Título obrigatório"); return; }
     setLoading(true);
     try {
-      const task = await api.tasks.create({ title: title.trim(), description: description.trim() || undefined });
+      const task = await api.tasks.create({
+        title: title.trim(),
+        description: description.trim() || undefined,
+        categoryId: categoryId ?? undefined,
+      });
       onCreated(task);
       setTitle("");
       setDescription("");
+      setCategoryId(null);
       setExpanded(false);
       setError("");
     } catch (err) {
@@ -52,13 +60,23 @@ export function TaskForm({ onCreated }: TaskFormProps) {
       </div>
 
       {expanded && (
-        <Input
-          placeholder="Descrição (opcional)"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          disabled={loading}
-          aria-label="Descrição da tarefa"
-        />
+        <>
+          <Input
+            placeholder="Descrição (opcional)"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            disabled={loading}
+            aria-label="Descrição da tarefa"
+          />
+          {categories.length > 0 && (
+            <CategorySelector
+              categories={categories}
+              value={categoryId}
+              onChange={setCategoryId}
+              disabled={loading}
+            />
+          )}
+        </>
       )}
 
       {error && <p className="text-sm text-destructive">{error}</p>}
