@@ -1,5 +1,11 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
+export interface Category {
+  id: number;
+  name: string;
+  color: string;
+}
+
 export interface Task {
   id: number;
   title: string;
@@ -7,6 +13,7 @@ export interface Task {
   completed: boolean;
   createdAt: string;
   updatedAt: string;
+  category: Category | null;
 }
 
 export interface User {
@@ -40,9 +47,9 @@ export const api = {
   tasks: {
     list: () => request<Task[]>("/tasks"),
     get: (id: number) => request<Task>(`/tasks/${id}`),
-    create: (data: { title: string; description?: string }) =>
+    create: (data: { title: string; description?: string; categoryId?: number }) =>
       request<Task>("/tasks", { method: "POST", body: JSON.stringify(data) }),
-    update: (id: number, data: { title: string; description?: string }) =>
+    update: (id: number, data: { title: string; description?: string; categoryId?: number | null }) =>
       request<Task>(`/tasks/${id}`, { method: "PUT", body: JSON.stringify(data) }),
     toggle: (id: number) =>
       request<Task>(`/tasks/${id}/toggle`, { method: "PATCH" }),
@@ -58,5 +65,14 @@ export const api = {
       request<void>("/auth/logout", { method: "POST" }),
     me: () =>
       request<User>("/auth/me"),
+  },
+  categories: {
+    list: () => request<Category[]>("/categories"),
+    create: (data: { name: string; color: string }) =>
+      request<Category>("/categories", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: number, data: { name: string; color: string }) =>
+      request<Category>(`/categories/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    delete: (id: number) =>
+      request<void>(`/categories/${id}`, { method: "DELETE" }),
   },
 };
