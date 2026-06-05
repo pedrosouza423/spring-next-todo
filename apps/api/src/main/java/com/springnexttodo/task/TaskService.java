@@ -1,6 +1,7 @@
 package com.springnexttodo.task;
 
 import com.springnexttodo.auth.User;
+import com.springnexttodo.category.CategoryService;
 import com.springnexttodo.task.dto.TaskRequest;
 import com.springnexttodo.task.dto.TaskResponse;
 import jakarta.persistence.EntityNotFoundException;
@@ -14,12 +15,21 @@ import java.util.List;
 public class TaskService {
 
     private final TaskRepository repository;
+    private final CategoryService categoryService;
 
-    public TaskService(TaskRepository repository) {
+    public TaskService(TaskRepository repository, CategoryService categoryService) {
         this.repository = repository;
+        this.categoryService = categoryService;
     }
 
-    public List<TaskResponse> findAll(User user) {
+    public List<TaskResponse> findAll(User user, Long categoryId) {
+        if (categoryId != null) {
+            var category = categoryService.getEntityById(categoryId, user);
+            return repository.findByUserAndCategoryOrderByCreatedAtDesc(user, category)
+                    .stream()
+                    .map(TaskResponse::from)
+                    .toList();
+        }
         return repository.findByUserOrderByCreatedAtDesc(user)
                 .stream()
                 .map(TaskResponse::from)
@@ -36,6 +46,9 @@ public class TaskService {
         task.setTitle(req.title());
         task.setDescription(req.description());
         task.setUser(user);
+        if (req.categoryId() != null) {
+            task.setCategory(categoryService.getEntityById(req.categoryId(), user));
+        }
         return TaskResponse.from(repository.save(task));
     }
 
@@ -44,6 +57,9 @@ public class TaskService {
         var task = getOrThrow(id, user);
         task.setTitle(req.title());
         task.setDescription(req.description());
+        task.setCategory(req.categoryId() != null
+                ? categoryService.getEntityById(req.categoryId(), user)
+                : null);
         return TaskResponse.from(repository.save(task));
     }
 

@@ -9,5 +9,7 @@ public record TaskRequest(
     String title,
 
     @Size(max = 2000, message = "description must be at most 2000 characters")
-    String description
+    String description,
+
+    Long categoryId
 ) {}

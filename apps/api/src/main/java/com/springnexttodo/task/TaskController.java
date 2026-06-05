@@ -28,8 +28,8 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<TaskResponse> list(Authentication auth) {
-        return service.findAll(currentUser(auth));
+    public List<TaskResponse> list(@RequestParam(required = false) Long categoryId, Authentication auth) {
+        return service.findAll(currentUser(auth), categoryId);
     }
 
     @GetMapping("/{id}")
