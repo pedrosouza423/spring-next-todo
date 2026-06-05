@@ -1,4 +1,4 @@
-import { api, Task, User } from "@/lib/api";
+import { Task, User } from "@/lib/api";
 import { TaskList } from "@/components/tasks/TaskList";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { CheckSquare } from "lucide-react";
@@ -6,9 +6,15 @@ import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
-async function getTasks(): Promise<Task[]> {
+async function getTasks(authCookie: string | undefined): Promise<Task[]> {
+  if (!authCookie) return [];
   try {
-    return await api.tasks.list();
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+    const res = await fetch(`${apiUrl}/tasks`, {
+      headers: { Cookie: `auth_token=${authCookie}` },
+      cache: "no-store",
+    });
+    return res.ok ? res.json() : [];
   } catch {
     return [];
   }
@@ -33,7 +39,7 @@ export default async function HomePage() {
   const authCookie = cookieStore.get("auth_token")?.value;
 
   const [tasks, user] = await Promise.all([
-    getTasks(),
+    getTasks(authCookie),
     getCurrentUser(authCookie),
   ]);
 
