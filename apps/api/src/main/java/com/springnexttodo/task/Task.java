@@ -1,5 +1,6 @@
 package com.springnexttodo.task;
 
+import com.springnexttodo.auth.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -36,6 +37,10 @@ public class Task {
     @LastModifiedDate
     private Instant updatedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     public Long getId() { return id; }
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
@@ -45,4 +50,6 @@ public class Task {
     public void setCompleted(boolean completed) { this.completed = completed; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 }

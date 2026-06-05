@@ -30,7 +30,8 @@ cd apps/api
 - Console H2: `http://localhost:8080/h2-console`
   - JDBC URL: `jdbc:h2:mem:tododb`
   - User: `sa` | Senha: *(vazia)*
-- Seed automático: 3 tarefas de exemplo são criadas na primeira inicialização.
+- Seed automático: cria um usuário padrão e 3 tarefas de exemplo na primeira inicialização.
+  - Email: `seed@todo.dev` | Senha: `seed123`
 - **Os dados são perdidos ao reiniciar** (in-memory H2).
 
 ## Rodando o frontend

@@ -27,6 +27,7 @@ A documentação está organizada em **três camadas semânticas**:
 | Spec | Status | PR |
 | --- | --- | --- |
 | [2026-06-02-mvp-task-crud.md](specs/2026-06-02-mvp-task-crud.md) | Implemented | — |
+| [2026-06-04-auth-users.md](specs/2026-06-04-auth-users.md) | Implemented | feat/auth-jwt |
 
 Template para novos specs: [specs/_template.md](specs/_template.md).
 
@@ -47,5 +48,5 @@ Veja [adr/README.md](adr/README.md) para o template.
 
 | Doc | Quando criar |
 | --- | --- |
-| `architecture/auth-flow.md` | Quando Spring Security + JWT for implementado (issue #1) |
+| `architecture/auth-flow.md` | Diagrama de sequência do fluxo JWT (issue #1 implementada, doc pendente) |
 | `architecture/deployment.md` | Quando o primeiro pipeline CI/CD de deploy subir |
