@@ -41,7 +41,7 @@ export function TaskEditDialog({ task, categories, open, onOpenChange, onSave }:
   }
 
   return (
-    <Dialog key={task.id} open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Editar tarefa</DialogTitle>
