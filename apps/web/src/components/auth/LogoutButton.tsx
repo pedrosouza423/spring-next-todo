@@ -6,7 +6,11 @@ import { Button } from "@/components/ui/button";
 export function LogoutButton() {
   const router = useRouter();
   async function handleLogout() {
-    await api.auth.logout();
+    try {
+      await api.auth.logout();
+    } catch {
+      // redirect to login regardless — cookie will expire naturally
+    }
     router.push("/login");
   }
   return (
