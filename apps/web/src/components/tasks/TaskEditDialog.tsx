@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,14 +18,6 @@ export function TaskEditDialog({ task, open, onOpenChange, onSave }: TaskEditDia
   const [description, setDescription] = useState(task.description ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (open) {
-      setTitle(task.title);
-      setDescription(task.description ?? "");
-      setError("");
-    }
-  }, [open, task]);
 
   async function handleSave() {
     if (!title.trim()) { setError("Título obrigatório"); return; }

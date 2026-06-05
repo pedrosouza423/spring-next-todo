@@ -87,6 +87,7 @@ export function TaskItem({ task, onUpdate, onDelete }: TaskItemProps) {
       </div>
 
       <TaskEditDialog
+        key={task.id}
         task={task}
         open={editing}
         onOpenChange={setEditing}

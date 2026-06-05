@@ -9,6 +9,12 @@ export interface Task {
   updatedAt: string;
 }
 
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
 export interface ApiError {
   status: number;
   message: string;
@@ -19,6 +25,7 @@ export interface ApiError {
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     ...init,
   });
   if (!res.ok) {
@@ -41,5 +48,15 @@ export const api = {
       request<Task>(`/tasks/${id}/toggle`, { method: "PATCH" }),
     delete: (id: number) =>
       request<void>(`/tasks/${id}`, { method: "DELETE" }),
+  },
+  auth: {
+    register: (data: { name: string; email: string; password: string }) =>
+      request<User>("/auth/register", { method: "POST", body: JSON.stringify(data) }),
+    login: (data: { email: string; password: string }) =>
+      request<User>("/auth/login", { method: "POST", body: JSON.stringify(data) }),
+    logout: () =>
+      request<void>("/auth/logout", { method: "POST" }),
+    me: () =>
+      request<User>("/auth/me"),
   },
 };
