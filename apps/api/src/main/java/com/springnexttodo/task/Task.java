@@ -10,6 +10,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "tasks")
@@ -46,6 +47,8 @@ public class Task {
     @JoinColumn(name = "category_id")
     private Category category;
 
+    private LocalDate dueDate;
+
     public Long getId() { return id; }
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
@@ -59,4 +62,6 @@ public class Task {
     public void setUser(User user) { this.user = user; }
     public Category getCategory() { return category; }
     public void setCategory(Category category) { this.category = category; }
+    public LocalDate getDueDate() { return dueDate; }
+    public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
 }

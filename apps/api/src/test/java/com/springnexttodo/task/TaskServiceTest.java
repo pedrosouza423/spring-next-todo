@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -111,7 +112,7 @@ class TaskServiceTest {
 
     @Test
     void create_sets_user_on_task() {
-        TaskRequest req = new TaskRequest("New task", "desc", null);
+        TaskRequest req = new TaskRequest("New task", "desc", null, null);
         when(repository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
@@ -130,7 +131,7 @@ class TaskServiceTest {
         category.setColor("#3b82f6");
         category.setUser(user);
 
-        TaskRequest req = new TaskRequest("New task", null, 1L);
+        TaskRequest req = new TaskRequest("New task", null, 1L, null);
         when(categoryService.getEntityById(1L, user)).thenReturn(category);
         when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -146,9 +147,34 @@ class TaskServiceTest {
         when(categoryService.getEntityById(99L, user))
                 .thenThrow(new EntityNotFoundException("Category not found: 99"));
 
-        assertThatThrownBy(() -> taskService.create(new TaskRequest("New task", null, 99L), user))
+        assertThatThrownBy(() -> taskService.create(new TaskRequest("New task", null, 99L, null), user))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessageContaining("99");
+    }
+
+    @Test
+    void create_with_due_date_persists_it() {
+        LocalDate due = LocalDate.of(2026, 12, 31);
+        TaskRequest req = new TaskRequest("Task with due", null, null, due);
+        when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
+        taskService.create(req, user);
+
+        verify(repository).save(captor.capture());
+        assertThat(captor.getValue().getDueDate()).isEqualTo(due);
+    }
+
+    @Test
+    void create_with_null_due_date_leaves_it_null() {
+        TaskRequest req = new TaskRequest("No due date", null, null, null);
+        when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
+        taskService.create(req, user);
+
+        verify(repository).save(captor.capture());
+        assertThat(captor.getValue().getDueDate()).isNull();
     }
 
     @Test

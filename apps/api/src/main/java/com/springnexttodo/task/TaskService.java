@@ -49,6 +49,7 @@ public class TaskService {
         if (req.categoryId() != null) {
             task.setCategory(categoryService.getEntityById(req.categoryId(), user));
         }
+        task.setDueDate(req.dueDate());
         return TaskResponse.from(repository.save(task));
     }
 
@@ -60,6 +61,7 @@ public class TaskService {
         task.setCategory(req.categoryId() != null
                 ? categoryService.getEntityById(req.categoryId(), user)
                 : null);
+        task.setDueDate(req.dueDate());
         return TaskResponse.from(repository.save(task));
     }
 

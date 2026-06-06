@@ -11,6 +11,8 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+
 @Component
 public class SeedData implements ApplicationRunner {
 
@@ -60,11 +62,13 @@ public class SeedData implements ApplicationRunner {
         t1.setDescription("Entender camadas Controller → Service → Repository");
         t1.setUser(seed);
         t1.setCategory(estudo);
+        t1.setDueDate(LocalDate.now().plusDays(5));
 
         Task t2 = new Task();
         t2.setTitle("Configurar Next.js com shadcn/ui");
         t2.setUser(seed);
         t2.setCategory(trabalho);
+        t2.setDueDate(LocalDate.now().minusDays(2));
 
         Task t3 = new Task();
         t3.setTitle("Conectar front ao back via fetch");

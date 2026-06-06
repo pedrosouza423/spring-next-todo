@@ -2,6 +2,7 @@ package com.springnexttodo.task.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
 
 public record TaskRequest(
     @NotBlank(message = "title is required")
@@ -11,5 +12,7 @@ public record TaskRequest(
     @Size(max = 2000, message = "description must be at most 2000 characters")
     String description,
 
-    Long categoryId
+    Long categoryId,
+
+    LocalDate dueDate
 ) {}
