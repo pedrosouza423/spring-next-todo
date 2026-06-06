@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Task, Category } from "@/lib/api";
+import { useState, useEffect, useRef } from "react";
+import { Task, Category, Priority, api } from "@/lib/api";
 import { TaskItem } from "./TaskItem";
 import { TaskForm } from "./TaskForm";
 import { Badge } from "@/components/ui/badge";
@@ -12,10 +12,33 @@ interface TaskListProps {
   categories: Category[];
 }
 
+const PRIORITY_LABELS: Record<Priority, string> = {
+  LOW: "Baixa",
+  MEDIUM: "Média",
+  HIGH: "Alta",
+};
+
+const PRIORITIES: Priority[] = ["LOW", "MEDIUM", "HIGH"];
+
 export function TaskList({ initialTasks, categories }: TaskListProps) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [filterCategoryId, setFilterCategoryId] = useState<number | null>(null);
+  const [filterPriority, setFilterPriority] = useState<Priority | null>(null);
+  const [filterCompleted, setFilterCompleted] = useState<boolean | null>(null);
   const [sortBy, setSortBy] = useState<"dueDate" | "createdAt">("dueDate");
+  const mounted = useRef(false);
+
+  useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+    api.tasks.list({
+      categoryId: filterCategoryId ?? undefined,
+      priority: filterPriority ?? undefined,
+      completed: filterCompleted ?? undefined,
+    }).then(setTasks);
+  }, [filterCategoryId, filterPriority, filterCompleted]);
 
   function handleCreated(task: Task) {
     setTasks((prev) => [task, ...prev]);
@@ -29,10 +52,7 @@ export function TaskList({ initialTasks, categories }: TaskListProps) {
     setTasks((prev) => prev.filter((t) => t.id !== id));
   }
 
-  const filtered = (filterCategoryId != null
-    ? tasks.filter((t) => t.category?.id === filterCategoryId)
-    : tasks
-  ).slice().sort((a, b) => {
+  const sorted = tasks.slice().sort((a, b) => {
     if (sortBy === "dueDate") {
       if (a.dueDate && b.dueDate && a.dueDate !== b.dueDate)
         return a.dueDate < b.dueDate ? -1 : 1;
@@ -42,8 +62,10 @@ export function TaskList({ initialTasks, categories }: TaskListProps) {
     return b.createdAt < a.createdAt ? -1 : b.createdAt > a.createdAt ? 1 : 0;
   });
 
-  const pending = filtered.filter((t) => !t.completed);
-  const done = filtered.filter((t) => t.completed);
+  const pending = sorted.filter((t) => !t.completed);
+  const done = sorted.filter((t) => t.completed);
+
+  const anyFilter = filterCategoryId != null || filterPriority != null || filterCompleted != null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -61,6 +83,7 @@ export function TaskList({ initialTasks, categories }: TaskListProps) {
         </select>
       </div>
 
+      {/* Category filter */}
       {categories.length > 0 && (
         <div className="flex flex-wrap gap-2">
           <button
@@ -94,10 +117,63 @@ export function TaskList({ initialTasks, categories }: TaskListProps) {
         </div>
       )}
 
-      {filtered.length === 0 && (
+      {/* Priority filter */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => setFilterPriority(null)}
+          className={cn(
+            "px-3 py-1 text-xs rounded-full border transition-colors",
+            filterPriority === null
+              ? "bg-primary text-primary-foreground border-primary"
+              : "border-border text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Prioridade: Todas
+        </button>
+        {PRIORITIES.map((p) => (
+          <button
+            key={p}
+            type="button"
+            onClick={() => setFilterPriority(p === filterPriority ? null : p)}
+            className={cn(
+              "px-3 py-1 text-xs rounded-full border transition-colors",
+              filterPriority === p
+                ? "bg-primary text-primary-foreground border-primary"
+                : "border-border text-muted-foreground hover:text-foreground"
+            )}
+          >
+            {PRIORITY_LABELS[p]}
+          </button>
+        ))}
+      </div>
+
+      {/* Status filter */}
+      <div className="flex flex-wrap gap-2">
+        {([null, false, true] as const).map((val) => {
+          const label = val === null ? "Status: Todas" : val ? "Concluídas" : "Pendentes";
+          return (
+            <button
+              key={String(val)}
+              type="button"
+              onClick={() => setFilterCompleted(val === filterCompleted ? null : val)}
+              className={cn(
+                "px-3 py-1 text-xs rounded-full border transition-colors",
+                filterCompleted === val
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-border text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
+      {sorted.length === 0 && (
         <p className="text-center text-muted-foreground text-sm py-8">
-          {filterCategoryId != null
-            ? "Nenhuma tarefa nesta categoria."
+          {anyFilter
+            ? "Nenhuma tarefa encontrada com esses filtros."
             : "Nenhuma tarefa ainda. Adicione a primeira acima!"}
         </p>
       )}

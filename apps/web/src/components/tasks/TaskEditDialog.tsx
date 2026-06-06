@@ -4,8 +4,9 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Task, Category, api } from "@/lib/api";
+import { Task, Category, Priority, api } from "@/lib/api";
 import { CategorySelector } from "./CategorySelector";
+import { PrioritySelector } from "./PrioritySelector";
 
 interface TaskEditDialogProps {
   task: Task;
@@ -20,6 +21,7 @@ export function TaskEditDialog({ task, categories, open, onOpenChange, onSave }:
   const [description, setDescription] = useState(task.description ?? "");
   const [categoryId, setCategoryId] = useState<number | null>(task.category?.id ?? null);
   const [dueDate, setDueDate] = useState(task.dueDate ?? "");
+  const [priority, setPriority] = useState<Priority>(task.priority);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -32,6 +34,7 @@ export function TaskEditDialog({ task, categories, open, onOpenChange, onSave }:
         description: description.trim() || undefined,
         categoryId: categoryId,
         dueDate: dueDate || null,
+        priority,
       });
       onSave(updated);
       onOpenChange(false);
@@ -77,6 +80,7 @@ export function TaskEditDialog({ task, categories, open, onOpenChange, onSave }:
             disabled={loading}
             aria-label="Data de vencimento"
           />
+          <PrioritySelector value={priority} onChange={setPriority} disabled={loading} />
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
         <DialogFooter>

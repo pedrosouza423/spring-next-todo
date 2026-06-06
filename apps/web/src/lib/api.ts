@@ -6,6 +6,8 @@ export interface Category {
   color: string;
 }
 
+export type Priority = "LOW" | "MEDIUM" | "HIGH";
+
 export interface Task {
   id: number;
   title: string;
@@ -15,6 +17,7 @@ export interface Task {
   updatedAt: string;
   dueDate: string | null;
   category: Category | null;
+  priority: Priority;
 }
 
 export interface User {
@@ -46,11 +49,18 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   tasks: {
-    list: () => request<Task[]>("/tasks"),
+    list: (filters?: { categoryId?: number; priority?: Priority; completed?: boolean }) => {
+      const qs = new URLSearchParams();
+      if (filters?.categoryId != null) qs.set("categoryId", String(filters.categoryId));
+      if (filters?.priority) qs.set("priority", filters.priority);
+      if (filters?.completed != null) qs.set("completed", String(filters.completed));
+      const q = qs.toString();
+      return request<Task[]>(`/tasks${q ? `?${q}` : ""}`);
+    },
     get: (id: number) => request<Task>(`/tasks/${id}`),
-    create: (data: { title: string; description?: string; categoryId?: number; dueDate?: string }) =>
+    create: (data: { title: string; description?: string; categoryId?: number; dueDate?: string; priority?: Priority }) =>
       request<Task>("/tasks", { method: "POST", body: JSON.stringify(data) }),
-    update: (id: number, data: { title: string; description?: string; categoryId?: number | null; dueDate?: string | null }) =>
+    update: (id: number, data: { title: string; description?: string; categoryId?: number | null; dueDate?: string | null; priority?: Priority }) =>
       request<Task>(`/tasks/${id}`, { method: "PUT", body: JSON.stringify(data) }),
     toggle: (id: number) =>
       request<Task>(`/tasks/${id}/toggle`, { method: "PATCH" }),

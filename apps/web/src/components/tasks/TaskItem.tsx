@@ -9,6 +9,7 @@ import { Task, Category, api } from "@/lib/api";
 import { TaskEditDialog } from "./TaskEditDialog";
 import { CategoryBadge } from "./CategoryBadge";
 import { DueDateBadge } from "./DueDateBadge";
+import { PriorityBadge } from "./PriorityBadge";
 import { cn } from "@/lib/utils";
 
 interface TaskItemProps {
@@ -70,6 +71,9 @@ export function TaskItem({ task, categories, onUpdate, onDelete }: TaskItemProps
               <DueDateBadge dueDate={task.dueDate} completed={task.completed} />
             </div>
           )}
+          <div className="mt-1.5">
+            <PriorityBadge priority={task.priority} />
+          </div>
         </div>
 
         <div className="flex items-center gap-1 shrink-0">

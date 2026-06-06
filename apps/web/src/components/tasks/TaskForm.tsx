@@ -4,8 +4,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
-import { Task, Category, api } from "@/lib/api";
+import { Task, Category, Priority, api } from "@/lib/api";
 import { CategorySelector } from "./CategorySelector";
+import { PrioritySelector } from "./PrioritySelector";
 
 interface TaskFormProps {
   onCreated: (task: Task) => void;
@@ -17,6 +18,7 @@ export function TaskForm({ onCreated, categories }: TaskFormProps) {
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [dueDate, setDueDate] = useState("");
+  const [priority, setPriority] = useState<Priority>("MEDIUM");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [expanded, setExpanded] = useState(false);
@@ -31,12 +33,14 @@ export function TaskForm({ onCreated, categories }: TaskFormProps) {
         description: description.trim() || undefined,
         categoryId: categoryId ?? undefined,
         dueDate: dueDate || undefined,
+        priority,
       });
       onCreated(task);
       setTitle("");
       setDescription("");
       setCategoryId(null);
       setDueDate("");
+      setPriority("MEDIUM");
       setExpanded(false);
       setError("");
     } catch (err) {
@@ -86,6 +90,7 @@ export function TaskForm({ onCreated, categories }: TaskFormProps) {
             disabled={loading}
             aria-label="Data de vencimento"
           />
+          <PrioritySelector value={priority} onChange={setPriority} disabled={loading} />
         </>
       )}
 
