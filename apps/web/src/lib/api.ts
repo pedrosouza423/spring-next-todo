@@ -52,7 +52,7 @@ export const api = {
     list: (filters?: { categoryId?: number; priority?: Priority; completed?: boolean }) => {
       const qs = new URLSearchParams();
       if (filters?.categoryId != null) qs.set("categoryId", String(filters.categoryId));
-      if (filters?.priority) qs.set("priority", filters.priority);
+      if (filters?.priority != null) qs.set("priority", filters.priority);
       if (filters?.completed != null) qs.set("completed", String(filters.completed));
       const q = qs.toString();
       return request<Task[]>(`/tasks${q ? `?${q}` : ""}`);

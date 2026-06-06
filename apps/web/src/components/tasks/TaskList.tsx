@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Task, Category, Priority, api } from "@/lib/api";
 import { TaskItem } from "./TaskItem";
 import { TaskForm } from "./TaskForm";
+import { PRIORITY_LABELS } from "./PriorityBadge";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -11,12 +12,6 @@ interface TaskListProps {
   initialTasks: Task[];
   categories: Category[];
 }
-
-const PRIORITY_LABELS: Record<Priority, string> = {
-  LOW: "Baixa",
-  MEDIUM: "Média",
-  HIGH: "Alta",
-};
 
 const PRIORITIES: Priority[] = ["LOW", "MEDIUM", "HIGH"];
 
@@ -33,19 +28,35 @@ export function TaskList({ initialTasks, categories }: TaskListProps) {
       mounted.current = true;
       return;
     }
+    let cancelled = false;
     api.tasks.list({
       categoryId: filterCategoryId ?? undefined,
       priority: filterPriority ?? undefined,
       completed: filterCompleted ?? undefined,
-    }).then(setTasks);
+    })
+      .then((data) => { if (!cancelled) setTasks(data); })
+      .catch((err) => { if (!cancelled) console.error(err); });
+    return () => { cancelled = true; };
   }, [filterCategoryId, filterPriority, filterCompleted]);
 
+  function matchesFilters(t: Task) {
+    return (
+      (filterPriority === null || t.priority === filterPriority) &&
+      (filterCompleted === null || t.completed === filterCompleted) &&
+      (filterCategoryId === null || t.category?.id === filterCategoryId)
+    );
+  }
+
   function handleCreated(task: Task) {
-    setTasks((prev) => [task, ...prev]);
+    if (matchesFilters(task)) setTasks((prev) => [task, ...prev]);
   }
 
   function handleUpdate(updated: Task) {
-    setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+    setTasks((prev) =>
+      matchesFilters(updated)
+        ? prev.map((t) => (t.id === updated.id ? updated : t))
+        : prev.filter((t) => t.id !== updated.id)
+    );
   }
 
   function handleDelete(id: number) {
