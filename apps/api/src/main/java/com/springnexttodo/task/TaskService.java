@@ -22,15 +22,8 @@ public class TaskService {
         this.categoryService = categoryService;
     }
 
-    public List<TaskResponse> findAll(User user, Long categoryId) {
-        if (categoryId != null) {
-            var category = categoryService.getEntityById(categoryId, user);
-            return repository.findByUserAndCategoryOrderByCreatedAtDesc(user, category)
-                    .stream()
-                    .map(TaskResponse::from)
-                    .toList();
-        }
-        return repository.findByUserOrderByCreatedAtDesc(user)
+    public List<TaskResponse> findAll(User user, Long categoryId, Priority priority, Boolean completed) {
+        return repository.findFiltered(user, categoryId, priority, completed)
                 .stream()
                 .map(TaskResponse::from)
                 .toList();
@@ -50,6 +43,7 @@ public class TaskService {
             task.setCategory(categoryService.getEntityById(req.categoryId(), user));
         }
         task.setDueDate(req.dueDate());
+        task.setPriority(req.priority() != null ? req.priority() : Priority.MEDIUM);
         return TaskResponse.from(repository.save(task));
     }
 
@@ -62,6 +56,7 @@ public class TaskService {
                 ? categoryService.getEntityById(req.categoryId(), user)
                 : null);
         task.setDueDate(req.dueDate());
+        task.setPriority(req.priority() != null ? req.priority() : Priority.MEDIUM);
         return TaskResponse.from(repository.save(task));
     }
 
