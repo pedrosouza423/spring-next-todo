@@ -8,6 +8,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import { Task, Category, api } from "@/lib/api";
 import { TaskEditDialog } from "./TaskEditDialog";
 import { CategoryBadge } from "./CategoryBadge";
+import { DueDateBadge } from "./DueDateBadge";
 import { cn } from "@/lib/utils";
 
 interface TaskItemProps {
@@ -62,6 +63,11 @@ export function TaskItem({ task, categories, onUpdate, onDelete }: TaskItemProps
           {task.category && (
             <div className="mt-1.5">
               <CategoryBadge category={task.category} />
+            </div>
+          )}
+          {task.dueDate && (
+            <div className="mt-1.5">
+              <DueDateBadge dueDate={task.dueDate} completed={task.completed} />
             </div>
           )}
         </div>

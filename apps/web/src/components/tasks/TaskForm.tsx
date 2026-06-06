@@ -16,6 +16,7 @@ export function TaskForm({ onCreated, categories }: TaskFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [dueDate, setDueDate] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [expanded, setExpanded] = useState(false);
@@ -29,11 +30,13 @@ export function TaskForm({ onCreated, categories }: TaskFormProps) {
         title: title.trim(),
         description: description.trim() || undefined,
         categoryId: categoryId ?? undefined,
+        dueDate: dueDate || undefined,
       });
       onCreated(task);
       setTitle("");
       setDescription("");
       setCategoryId(null);
+      setDueDate("");
       setExpanded(false);
       setError("");
     } catch (err) {
@@ -76,6 +79,13 @@ export function TaskForm({ onCreated, categories }: TaskFormProps) {
               disabled={loading}
             />
           )}
+          <Input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            disabled={loading}
+            aria-label="Data de vencimento"
+          />
         </>
       )}
 

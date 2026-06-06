@@ -13,6 +13,7 @@ export interface Task {
   completed: boolean;
   createdAt: string;
   updatedAt: string;
+  dueDate: string | null;
   category: Category | null;
 }
 
@@ -47,9 +48,9 @@ export const api = {
   tasks: {
     list: () => request<Task[]>("/tasks"),
     get: (id: number) => request<Task>(`/tasks/${id}`),
-    create: (data: { title: string; description?: string; categoryId?: number }) =>
+    create: (data: { title: string; description?: string; categoryId?: number; dueDate?: string }) =>
       request<Task>("/tasks", { method: "POST", body: JSON.stringify(data) }),
-    update: (id: number, data: { title: string; description?: string; categoryId?: number | null }) =>
+    update: (id: number, data: { title: string; description?: string; categoryId?: number | null; dueDate?: string | null }) =>
       request<Task>(`/tasks/${id}`, { method: "PUT", body: JSON.stringify(data) }),
     toggle: (id: number) =>
       request<Task>(`/tasks/${id}/toggle`, { method: "PATCH" }),

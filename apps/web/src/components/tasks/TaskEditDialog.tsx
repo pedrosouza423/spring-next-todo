@@ -19,6 +19,7 @@ export function TaskEditDialog({ task, categories, open, onOpenChange, onSave }:
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description ?? "");
   const [categoryId, setCategoryId] = useState<number | null>(task.category?.id ?? null);
+  const [dueDate, setDueDate] = useState(task.dueDate ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -30,6 +31,7 @@ export function TaskEditDialog({ task, categories, open, onOpenChange, onSave }:
         title: title.trim(),
         description: description.trim() || undefined,
         categoryId: categoryId,
+        dueDate: dueDate || null,
       });
       onSave(updated);
       onOpenChange(false);
@@ -68,6 +70,13 @@ export function TaskEditDialog({ task, categories, open, onOpenChange, onSave }:
               disabled={loading}
             />
           )}
+          <Input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            disabled={loading}
+            aria-label="Data de vencimento"
+          />
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
         <DialogFooter>
