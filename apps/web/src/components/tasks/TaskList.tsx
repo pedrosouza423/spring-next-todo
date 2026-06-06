@@ -1,17 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Task } from "@/lib/api";
+import { Task, Category } from "@/lib/api";
 import { TaskItem } from "./TaskItem";
 import { TaskForm } from "./TaskForm";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface TaskListProps {
   initialTasks: Task[];
+  categories: Category[];
 }
 
-export function TaskList({ initialTasks }: TaskListProps) {
+export function TaskList({ initialTasks, categories }: TaskListProps) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [filterCategoryId, setFilterCategoryId] = useState<number | null>(null);
+  const [sortBy, setSortBy] = useState<"dueDate" | "createdAt">("dueDate");
 
   function handleCreated(task: Task) {
     setTasks((prev) => [task, ...prev]);
@@ -25,16 +29,75 @@ export function TaskList({ initialTasks }: TaskListProps) {
     setTasks((prev) => prev.filter((t) => t.id !== id));
   }
 
-  const pending = tasks.filter((t) => !t.completed);
-  const done = tasks.filter((t) => t.completed);
+  const filtered = (filterCategoryId != null
+    ? tasks.filter((t) => t.category?.id === filterCategoryId)
+    : tasks
+  ).slice().sort((a, b) => {
+    if (sortBy === "dueDate") {
+      if (a.dueDate && b.dueDate) return a.dueDate < b.dueDate ? -1 : a.dueDate > b.dueDate ? 1 : 0;
+      if (a.dueDate) return -1;
+      if (b.dueDate) return 1;
+    }
+    return b.createdAt < a.createdAt ? -1 : b.createdAt > a.createdAt ? 1 : 0;
+  });
+
+  const pending = filtered.filter((t) => !t.completed);
+  const done = filtered.filter((t) => t.completed);
 
   return (
     <div className="flex flex-col gap-6">
-      <TaskForm onCreated={handleCreated} />
+      <TaskForm onCreated={handleCreated} categories={categories} />
 
-      {tasks.length === 0 && (
+      <div className="flex items-center justify-end">
+        <select
+          className="flex h-8 rounded-md border border-input bg-transparent px-2 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as "dueDate" | "createdAt")}
+          aria-label="Ordenar por"
+        >
+          <option value="dueDate">Ordenar: Prazo</option>
+          <option value="createdAt">Ordenar: Mais recentes</option>
+        </select>
+      </div>
+
+      {categories.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setFilterCategoryId(null)}
+            className={cn(
+              "px-3 py-1 text-xs rounded-full border transition-colors",
+              filterCategoryId === null
+                ? "bg-primary text-primary-foreground border-primary"
+                : "border-border text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Todas
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => setFilterCategoryId(cat.id === filterCategoryId ? null : cat.id)}
+              className={cn(
+                "px-3 py-1 text-xs rounded-full border transition-colors",
+                filterCategoryId === cat.id
+                  ? "text-white border-transparent"
+                  : "border-border text-muted-foreground hover:text-foreground"
+              )}
+              style={filterCategoryId === cat.id ? { backgroundColor: cat.color, borderColor: cat.color } : {}}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {filtered.length === 0 && (
         <p className="text-center text-muted-foreground text-sm py-8">
-          Nenhuma tarefa ainda. Adicione a primeira acima!
+          {filterCategoryId != null
+            ? "Nenhuma tarefa nesta categoria."
+            : "Nenhuma tarefa ainda. Adicione a primeira acima!"}
         </p>
       )}
 
@@ -46,7 +109,7 @@ export function TaskList({ initialTasks }: TaskListProps) {
           </div>
           <div className="flex flex-col gap-2">
             {pending.map((task) => (
-              <TaskItem key={task.id} task={task} onUpdate={handleUpdate} onDelete={handleDelete} />
+              <TaskItem key={task.id} task={task} categories={categories} onUpdate={handleUpdate} onDelete={handleDelete} />
             ))}
           </div>
         </section>
@@ -60,7 +123,7 @@ export function TaskList({ initialTasks }: TaskListProps) {
           </div>
           <div className="flex flex-col gap-2">
             {done.map((task) => (
-              <TaskItem key={task.id} task={task} onUpdate={handleUpdate} onDelete={handleDelete} />
+              <TaskItem key={task.id} task={task} categories={categories} onUpdate={handleUpdate} onDelete={handleDelete} />
             ))}
           </div>
         </section>

@@ -1,6 +1,8 @@
 package com.springnexttodo.task;
 
 import com.springnexttodo.auth.User;
+import com.springnexttodo.category.Category;
+import com.springnexttodo.category.CategoryService;
 import com.springnexttodo.task.dto.TaskRequest;
 import com.springnexttodo.task.dto.TaskResponse;
 import jakarta.persistence.EntityNotFoundException;
@@ -12,12 +14,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,6 +29,9 @@ class TaskServiceTest {
 
     @Mock
     private TaskRepository repository;
+
+    @Mock
+    private CategoryService categoryService;
 
     @InjectMocks
     private TaskService taskService;
@@ -51,11 +58,39 @@ class TaskServiceTest {
         another.setUser(user);
         when(repository.findByUserOrderByCreatedAtDesc(user)).thenReturn(List.of(task, another));
 
-        List<TaskResponse> result = taskService.findAll(user);
+        List<TaskResponse> result = taskService.findAll(user, null);
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).title()).isEqualTo("Test task");
         assertThat(result.get(1).title()).isEqualTo("Another task");
+    }
+
+    @Test
+    void findAll_filtered_by_category() {
+        Category category = new Category();
+        category.setName("Trabalho");
+        category.setColor("#3b82f6");
+        category.setUser(user);
+        task.setCategory(category);
+
+        when(categoryService.getEntityById(1L, user)).thenReturn(category);
+        when(repository.findByUserAndCategoryOrderByCreatedAtDesc(user, category)).thenReturn(List.of(task));
+
+        List<TaskResponse> result = taskService.findAll(user, 1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).title()).isEqualTo("Test task");
+        verify(repository).findByUserAndCategoryOrderByCreatedAtDesc(user, category);
+    }
+
+    @Test
+    void findAll_with_unknown_category_throws() {
+        when(categoryService.getEntityById(99L, user))
+                .thenThrow(new EntityNotFoundException("Category not found: 99"));
+
+        assertThatThrownBy(() -> taskService.findAll(user, 99L))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("99");
     }
 
     @Test
@@ -77,15 +112,69 @@ class TaskServiceTest {
 
     @Test
     void create_sets_user_on_task() {
-        TaskRequest req = new TaskRequest("New task", "desc");
+        TaskRequest req = new TaskRequest("New task", "desc", null, null);
         when(repository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
         taskService.create(req, user);
 
-        org.mockito.Mockito.verify(repository).save(captor.capture());
+        verify(repository).save(captor.capture());
         assertThat(captor.getValue().getUser()).isSameAs(user);
         assertThat(captor.getValue().getTitle()).isEqualTo("New task");
+        assertThat(captor.getValue().getCategory()).isNull();
+    }
+
+    @Test
+    void create_with_valid_category_sets_it() {
+        Category category = new Category();
+        category.setName("Trabalho");
+        category.setColor("#3b82f6");
+        category.setUser(user);
+
+        TaskRequest req = new TaskRequest("New task", null, 1L, null);
+        when(categoryService.getEntityById(1L, user)).thenReturn(category);
+        when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
+        taskService.create(req, user);
+
+        verify(repository).save(captor.capture());
+        assertThat(captor.getValue().getCategory()).isSameAs(category);
+    }
+
+    @Test
+    void create_with_invalid_category_throws() {
+        when(categoryService.getEntityById(99L, user))
+                .thenThrow(new EntityNotFoundException("Category not found: 99"));
+
+        assertThatThrownBy(() -> taskService.create(new TaskRequest("New task", null, 99L, null), user))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("99");
+    }
+
+    @Test
+    void create_with_due_date_persists_it() {
+        LocalDate due = LocalDate.of(2026, 12, 31);
+        TaskRequest req = new TaskRequest("Task with due", null, null, due);
+        when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
+        taskService.create(req, user);
+
+        verify(repository).save(captor.capture());
+        assertThat(captor.getValue().getDueDate()).isEqualTo(due);
+    }
+
+    @Test
+    void create_with_null_due_date_leaves_it_null() {
+        TaskRequest req = new TaskRequest("No due date", null, null, null);
+        when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
+        taskService.create(req, user);
+
+        verify(repository).save(captor.capture());
+        assertThat(captor.getValue().getDueDate()).isNull();
     }
 
     @Test

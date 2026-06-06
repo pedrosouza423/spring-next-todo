@@ -4,18 +4,22 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Task, api } from "@/lib/api";
+import { Task, Category, api } from "@/lib/api";
+import { CategorySelector } from "./CategorySelector";
 
 interface TaskEditDialogProps {
   task: Task;
+  categories: Category[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (task: Task) => void;
 }
 
-export function TaskEditDialog({ task, open, onOpenChange, onSave }: TaskEditDialogProps) {
+export function TaskEditDialog({ task, categories, open, onOpenChange, onSave }: TaskEditDialogProps) {
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description ?? "");
+  const [categoryId, setCategoryId] = useState<number | null>(task.category?.id ?? null);
+  const [dueDate, setDueDate] = useState(task.dueDate ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -23,7 +27,12 @@ export function TaskEditDialog({ task, open, onOpenChange, onSave }: TaskEditDia
     if (!title.trim()) { setError("Título obrigatório"); return; }
     setLoading(true);
     try {
-      const updated = await api.tasks.update(task.id, { title: title.trim(), description: description.trim() || undefined });
+      const updated = await api.tasks.update(task.id, {
+        title: title.trim(),
+        description: description.trim() || undefined,
+        categoryId: categoryId,
+        dueDate: dueDate || null,
+      });
       onSave(updated);
       onOpenChange(false);
     } catch (e) {
@@ -52,6 +61,21 @@ export function TaskEditDialog({ task, open, onOpenChange, onSave }: TaskEditDia
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             disabled={loading}
+          />
+          {categories.length > 0 && (
+            <CategorySelector
+              categories={categories}
+              value={categoryId}
+              onChange={setCategoryId}
+              disabled={loading}
+            />
+          )}
+          <Input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            disabled={loading}
+            aria-label="Data de vencimento"
           />
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>

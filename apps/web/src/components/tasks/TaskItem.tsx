@@ -5,17 +5,20 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Pencil, Trash2 } from "lucide-react";
-import { Task, api } from "@/lib/api";
+import { Task, Category, api } from "@/lib/api";
 import { TaskEditDialog } from "./TaskEditDialog";
+import { CategoryBadge } from "./CategoryBadge";
+import { DueDateBadge } from "./DueDateBadge";
 import { cn } from "@/lib/utils";
 
 interface TaskItemProps {
   task: Task;
+  categories: Category[];
   onUpdate: (task: Task) => void;
   onDelete: (id: number) => void;
 }
 
-export function TaskItem({ task, onUpdate, onDelete }: TaskItemProps) {
+export function TaskItem({ task, categories, onUpdate, onDelete }: TaskItemProps) {
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
 
@@ -57,6 +60,16 @@ export function TaskItem({ task, onUpdate, onDelete }: TaskItemProps) {
           {task.description && (
             <p className="text-sm text-muted-foreground mt-0.5 break-words">{task.description}</p>
           )}
+          {task.category && (
+            <div className="mt-1.5">
+              <CategoryBadge category={task.category} />
+            </div>
+          )}
+          {task.dueDate && (
+            <div className="mt-1.5">
+              <DueDateBadge dueDate={task.dueDate} completed={task.completed} />
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
@@ -87,8 +100,9 @@ export function TaskItem({ task, onUpdate, onDelete }: TaskItemProps) {
       </div>
 
       <TaskEditDialog
-        key={task.id}
+        key={task.updatedAt}
         task={task}
+        categories={categories}
         open={editing}
         onOpenChange={setEditing}
         onSave={onUpdate}

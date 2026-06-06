@@ -1,6 +1,7 @@
 package com.springnexttodo.task;
 
 import com.springnexttodo.auth.User;
+import com.springnexttodo.category.Category;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -9,6 +10,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "tasks")
@@ -41,6 +43,12 @@ public class Task {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @ManyToOne(fetch = FetchType.EAGER, optional = true)
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+    private LocalDate dueDate;
+
     public Long getId() { return id; }
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
@@ -52,4 +60,8 @@ public class Task {
     public Instant getUpdatedAt() { return updatedAt; }
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+    public Category getCategory() { return category; }
+    public void setCategory(Category category) { this.category = category; }
+    public LocalDate getDueDate() { return dueDate; }
+    public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
 }
