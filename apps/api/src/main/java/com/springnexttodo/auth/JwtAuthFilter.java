@@ -5,6 +5,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,6 +18,8 @@ import java.util.Arrays;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
+
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthFilter.class);
 
     private final JwtService jwtService;
     private final UserDetailsServiceImpl userDetailsService;
@@ -31,7 +35,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String token = extractTokenFromCookie(request);
 
-        if (token != null && jwtService.isValid(token)) {
+        if (token != null) {
             try {
                 String email = jwtService.extractEmail(token);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
@@ -39,8 +43,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(auth);
-            } catch (RuntimeException ignored) {
-                // token passed isValid() but extractEmail/loadUser failed — skip auth, let security chain deny
+            } catch (RuntimeException e) {
+                log.warn("JWT auth failed: {}", e.getMessage());
             }
         }
 

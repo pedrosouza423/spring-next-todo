@@ -76,13 +76,6 @@ npm run lint                  # lint
 | `PATCH` | `/tasks/{id}/toggle` | Alterna concluída/pendente |
 | `DELETE` | `/tasks/{id}` | Remove tarefa |
 
-## Branch workflow
-
-- `main` é protegida — **nunca faça push direto**.
-- Crie uma branch para cada feature/fix: `feat/nome`, `fix/nome`.
-- Abra PR para `main`; pelo menos 1 aprovação antes do merge.
-- Commits atômicos e descritivos (ex: `feat(api): add toggle endpoint`).
-
 ## Documentação
 
 Em `docs/` — arquitetura, domain model, rotas da API e decisões técnicas.  

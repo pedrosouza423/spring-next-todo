@@ -1,7 +1,7 @@
 package com.springnexttodo.task;
 
 import com.springnexttodo.auth.AuthService;
-import com.springnexttodo.auth.User;
+import com.springnexttodo.common.BaseController;
 import com.springnexttodo.task.dto.TaskRequest;
 import com.springnexttodo.task.dto.TaskResponse;
 import jakarta.validation.Valid;
@@ -13,18 +13,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/tasks")
-public class TaskController {
+public class TaskController extends BaseController {
 
     private final TaskService service;
-    private final AuthService authService;
 
     public TaskController(TaskService service, AuthService authService) {
+        super(authService);
         this.service = service;
-        this.authService = authService;
-    }
-
-    private User currentUser(Authentication auth) {
-        return authService.getUser(auth.getName());
     }
 
     @GetMapping

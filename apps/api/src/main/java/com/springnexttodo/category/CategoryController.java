@@ -1,7 +1,7 @@
 package com.springnexttodo.category;
 
 import com.springnexttodo.auth.AuthService;
-import com.springnexttodo.auth.User;
+import com.springnexttodo.common.BaseController;
 import com.springnexttodo.category.dto.CategoryRequest;
 import com.springnexttodo.category.dto.CategoryResponse;
 import jakarta.validation.Valid;
@@ -13,18 +13,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/categories")
-public class CategoryController {
+public class CategoryController extends BaseController {
 
     private final CategoryService service;
-    private final AuthService authService;
 
     public CategoryController(CategoryService service, AuthService authService) {
+        super(authService);
         this.service = service;
-        this.authService = authService;
-    }
-
-    private User currentUser(Authentication auth) {
-        return authService.getUser(auth.getName());
     }
 
     @GetMapping

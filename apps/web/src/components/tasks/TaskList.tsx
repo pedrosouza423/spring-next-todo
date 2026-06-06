@@ -34,9 +34,10 @@ export function TaskList({ initialTasks, categories }: TaskListProps) {
     : tasks
   ).slice().sort((a, b) => {
     if (sortBy === "dueDate") {
-      if (a.dueDate && b.dueDate) return a.dueDate < b.dueDate ? -1 : a.dueDate > b.dueDate ? 1 : 0;
-      if (a.dueDate) return -1;
-      if (b.dueDate) return 1;
+      if (a.dueDate && b.dueDate && a.dueDate !== b.dueDate)
+        return a.dueDate < b.dueDate ? -1 : 1;
+      if (a.dueDate && !b.dueDate) return -1;
+      if (!a.dueDate && b.dueDate) return 1;
     }
     return b.createdAt < a.createdAt ? -1 : b.createdAt > a.createdAt ? 1 : 0;
   });
