@@ -1,5 +1,6 @@
 package com.springnexttodo.task.dto;
 
+import com.springnexttodo.task.Priority;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
@@ -14,5 +15,7 @@ public record TaskRequest(
 
     Long categoryId,
 
-    LocalDate dueDate
+    LocalDate dueDate,
+
+    Priority priority
 ) {}

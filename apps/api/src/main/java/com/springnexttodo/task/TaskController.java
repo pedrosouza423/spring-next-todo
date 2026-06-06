@@ -4,6 +4,7 @@ import com.springnexttodo.auth.AuthService;
 import com.springnexttodo.common.BaseController;
 import com.springnexttodo.task.dto.TaskRequest;
 import com.springnexttodo.task.dto.TaskResponse;
+import com.springnexttodo.task.Priority;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -23,8 +24,12 @@ public class TaskController extends BaseController {
     }
 
     @GetMapping
-    public List<TaskResponse> list(@RequestParam(required = false) Long categoryId, Authentication auth) {
-        return service.findAll(currentUser(auth), categoryId);
+    public List<TaskResponse> list(
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Priority priority,
+            @RequestParam(required = false) Boolean completed,
+            Authentication auth) {
+        return service.findAll(currentUser(auth), categoryId, priority, completed);
     }
 
     @GetMapping("/{id}")

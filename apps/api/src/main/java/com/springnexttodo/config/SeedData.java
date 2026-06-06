@@ -4,6 +4,7 @@ import com.springnexttodo.auth.User;
 import com.springnexttodo.auth.UserRepository;
 import com.springnexttodo.category.Category;
 import com.springnexttodo.category.CategoryRepository;
+import com.springnexttodo.task.Priority;
 import com.springnexttodo.task.Task;
 import com.springnexttodo.task.TaskRepository;
 import org.springframework.boot.ApplicationArguments;
@@ -63,17 +64,20 @@ public class SeedData implements ApplicationRunner {
         t1.setUser(seed);
         t1.setCategory(estudo);
         t1.setDueDate(LocalDate.now().plusDays(5));
+        t1.setPriority(Priority.HIGH);
 
         Task t2 = new Task();
         t2.setTitle("Configurar Next.js com shadcn/ui");
         t2.setUser(seed);
         t2.setCategory(trabalho);
         t2.setDueDate(LocalDate.now().minusDays(2));
+        t2.setPriority(Priority.MEDIUM);
 
         Task t3 = new Task();
         t3.setTitle("Conectar front ao back via fetch");
         t3.setCompleted(true);
         t3.setUser(seed);
+        t3.setPriority(Priority.LOW);
 
         taskRepository.save(t1);
         taskRepository.save(t2);

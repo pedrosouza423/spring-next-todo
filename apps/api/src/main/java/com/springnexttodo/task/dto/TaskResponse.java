@@ -1,6 +1,7 @@
 package com.springnexttodo.task.dto;
 
 import com.springnexttodo.category.dto.CategoryResponse;
+import com.springnexttodo.task.Priority;
 import com.springnexttodo.task.Task;
 
 import java.time.Instant;
@@ -14,7 +15,8 @@ public record TaskResponse(
     Instant createdAt,
     Instant updatedAt,
     CategoryResponse category,
-    LocalDate dueDate
+    LocalDate dueDate,
+    Priority priority
 ) {
     public static TaskResponse from(Task task) {
         return new TaskResponse(
@@ -25,7 +27,8 @@ public record TaskResponse(
             task.getCreatedAt(),
             task.getUpdatedAt(),
             task.getCategory() != null ? CategoryResponse.from(task.getCategory()) : null,
-            task.getDueDate()
+            task.getDueDate(),
+            task.getPriority()
         );
     }
 }

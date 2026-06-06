@@ -11,9 +11,22 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TaskRepository extends JpaRepository<Task, Long> {
-    List<Task> findByUserOrderByCreatedAtDesc(User user);
     Optional<Task> findByIdAndUser(Long id, User user);
-    List<Task> findByUserAndCategoryOrderByCreatedAtDesc(User user, Category category);
+
+    @Query("""
+        SELECT t FROM Task t
+        WHERE t.user = :user
+          AND (:categoryId IS NULL OR t.category.id = :categoryId)
+          AND (:priority   IS NULL OR t.priority   = :priority)
+          AND (:completed  IS NULL OR t.completed  = :completed)
+        ORDER BY t.createdAt DESC
+    """)
+    List<Task> findFiltered(
+        @Param("user") User user,
+        @Param("categoryId") Long categoryId,
+        @Param("priority") Priority priority,
+        @Param("completed") Boolean completed
+    );
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Task t SET t.category = null WHERE t.category = :category")

@@ -56,9 +56,9 @@ class TaskServiceTest {
         Task another = new Task();
         another.setTitle("Another task");
         another.setUser(user);
-        when(repository.findByUserOrderByCreatedAtDesc(user)).thenReturn(List.of(task, another));
+        when(repository.findFiltered(user, null, null, null)).thenReturn(List.of(task, another));
 
-        List<TaskResponse> result = taskService.findAll(user, null);
+        List<TaskResponse> result = taskService.findAll(user, null, null, null);
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).title()).isEqualTo("Test task");
@@ -73,24 +73,35 @@ class TaskServiceTest {
         category.setUser(user);
         task.setCategory(category);
 
-        when(categoryService.getEntityById(1L, user)).thenReturn(category);
-        when(repository.findByUserAndCategoryOrderByCreatedAtDesc(user, category)).thenReturn(List.of(task));
+        when(repository.findFiltered(user, 1L, null, null)).thenReturn(List.of(task));
 
-        List<TaskResponse> result = taskService.findAll(user, 1L);
+        List<TaskResponse> result = taskService.findAll(user, 1L, null, null);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).title()).isEqualTo("Test task");
-        verify(repository).findByUserAndCategoryOrderByCreatedAtDesc(user, category);
+        verify(repository).findFiltered(user, 1L, null, null);
     }
 
     @Test
-    void findAll_with_unknown_category_throws() {
-        when(categoryService.getEntityById(99L, user))
-                .thenThrow(new EntityNotFoundException("Category not found: 99"));
+    void findAll_filtered_by_priority() {
+        task.setPriority(Priority.HIGH);
+        when(repository.findFiltered(user, null, Priority.HIGH, null)).thenReturn(List.of(task));
 
-        assertThatThrownBy(() -> taskService.findAll(user, 99L))
-                .isInstanceOf(EntityNotFoundException.class)
-                .hasMessageContaining("99");
+        List<TaskResponse> result = taskService.findAll(user, null, Priority.HIGH, null);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).priority()).isEqualTo(Priority.HIGH);
+    }
+
+    @Test
+    void findAll_filtered_by_completed() {
+        task.setCompleted(false);
+        when(repository.findFiltered(user, null, null, false)).thenReturn(List.of(task));
+
+        List<TaskResponse> result = taskService.findAll(user, null, null, false);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).completed()).isFalse();
     }
 
     @Test
@@ -112,7 +123,7 @@ class TaskServiceTest {
 
     @Test
     void create_sets_user_on_task() {
-        TaskRequest req = new TaskRequest("New task", "desc", null, null);
+        TaskRequest req = new TaskRequest("New task", "desc", null, null, null);
         when(repository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
@@ -125,13 +136,37 @@ class TaskServiceTest {
     }
 
     @Test
+    void create_without_priority_defaults_to_medium() {
+        TaskRequest req = new TaskRequest("New task", null, null, null, null);
+        when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
+        taskService.create(req, user);
+
+        verify(repository).save(captor.capture());
+        assertThat(captor.getValue().getPriority()).isEqualTo(Priority.MEDIUM);
+    }
+
+    @Test
+    void create_with_explicit_priority_persists_it() {
+        TaskRequest req = new TaskRequest("New task", null, null, null, Priority.HIGH);
+        when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
+        taskService.create(req, user);
+
+        verify(repository).save(captor.capture());
+        assertThat(captor.getValue().getPriority()).isEqualTo(Priority.HIGH);
+    }
+
+    @Test
     void create_with_valid_category_sets_it() {
         Category category = new Category();
         category.setName("Trabalho");
         category.setColor("#3b82f6");
         category.setUser(user);
 
-        TaskRequest req = new TaskRequest("New task", null, 1L, null);
+        TaskRequest req = new TaskRequest("New task", null, 1L, null, null);
         when(categoryService.getEntityById(1L, user)).thenReturn(category);
         when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -147,7 +182,7 @@ class TaskServiceTest {
         when(categoryService.getEntityById(99L, user))
                 .thenThrow(new EntityNotFoundException("Category not found: 99"));
 
-        assertThatThrownBy(() -> taskService.create(new TaskRequest("New task", null, 99L, null), user))
+        assertThatThrownBy(() -> taskService.create(new TaskRequest("New task", null, 99L, null, null), user))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessageContaining("99");
     }
@@ -155,7 +190,7 @@ class TaskServiceTest {
     @Test
     void create_with_due_date_persists_it() {
         LocalDate due = LocalDate.of(2026, 12, 31);
-        TaskRequest req = new TaskRequest("Task with due", null, null, due);
+        TaskRequest req = new TaskRequest("Task with due", null, null, due, null);
         when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
 
         ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
@@ -167,7 +202,7 @@ class TaskServiceTest {
 
     @Test
     void create_with_null_due_date_leaves_it_null() {
-        TaskRequest req = new TaskRequest("No due date", null, null, null);
+        TaskRequest req = new TaskRequest("No due date", null, null, null, null);
         when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
 
         ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
