@@ -19,13 +19,17 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
           AND (:categoryId IS NULL OR t.category.id = :categoryId)
           AND (:priority   IS NULL OR t.priority   = :priority)
           AND (:completed  IS NULL OR t.completed  = :completed)
+          AND (:q IS NULL
+               OR LOWER(t.title) LIKE LOWER(CONCAT('%', :q, '%'))
+               OR LOWER(COALESCE(t.description, '')) LIKE LOWER(CONCAT('%', :q, '%')))
         ORDER BY t.createdAt DESC
     """)
     List<Task> findFiltered(
         @Param("user") User user,
         @Param("categoryId") Long categoryId,
         @Param("priority") Priority priority,
-        @Param("completed") Boolean completed
+        @Param("completed") Boolean completed,
+        @Param("q") String q
     );
 
     @Modifying(clearAutomatically = true)

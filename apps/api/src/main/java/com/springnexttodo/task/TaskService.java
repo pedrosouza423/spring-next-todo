@@ -22,8 +22,9 @@ public class TaskService {
         this.categoryService = categoryService;
     }
 
-    public List<TaskResponse> findAll(User user, Long categoryId, Priority priority, Boolean completed) {
-        return repository.findFiltered(user, categoryId, priority, completed)
+    public List<TaskResponse> findAll(User user, Long categoryId, Priority priority, Boolean completed, String q) {
+        String query = (q != null && !q.isBlank()) ? q.trim() : null;
+        return repository.findFiltered(user, categoryId, priority, completed, query)
                 .stream()
                 .map(TaskResponse::from)
                 .toList();

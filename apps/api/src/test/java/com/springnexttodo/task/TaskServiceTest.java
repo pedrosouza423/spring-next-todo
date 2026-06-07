@@ -56,9 +56,9 @@ class TaskServiceTest {
         Task another = new Task();
         another.setTitle("Another task");
         another.setUser(user);
-        when(repository.findFiltered(user, null, null, null)).thenReturn(List.of(task, another));
+        when(repository.findFiltered(user, null, null, null, null)).thenReturn(List.of(task, another));
 
-        List<TaskResponse> result = taskService.findAll(user, null, null, null);
+        List<TaskResponse> result = taskService.findAll(user, null, null, null, null);
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).title()).isEqualTo("Test task");
@@ -73,21 +73,21 @@ class TaskServiceTest {
         category.setUser(user);
         task.setCategory(category);
 
-        when(repository.findFiltered(user, 1L, null, null)).thenReturn(List.of(task));
+        when(repository.findFiltered(user, 1L, null, null, null)).thenReturn(List.of(task));
 
-        List<TaskResponse> result = taskService.findAll(user, 1L, null, null);
+        List<TaskResponse> result = taskService.findAll(user, 1L, null, null, null);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).title()).isEqualTo("Test task");
-        verify(repository).findFiltered(user, 1L, null, null);
+        verify(repository).findFiltered(user, 1L, null, null, null);
     }
 
     @Test
     void findAll_filtered_by_priority() {
         task.setPriority(Priority.HIGH);
-        when(repository.findFiltered(user, null, Priority.HIGH, null)).thenReturn(List.of(task));
+        when(repository.findFiltered(user, null, Priority.HIGH, null, null)).thenReturn(List.of(task));
 
-        List<TaskResponse> result = taskService.findAll(user, null, Priority.HIGH, null);
+        List<TaskResponse> result = taskService.findAll(user, null, Priority.HIGH, null, null);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).priority()).isEqualTo(Priority.HIGH);
@@ -96,12 +96,31 @@ class TaskServiceTest {
     @Test
     void findAll_filtered_by_completed() {
         task.setCompleted(false);
-        when(repository.findFiltered(user, null, null, false)).thenReturn(List.of(task));
+        when(repository.findFiltered(user, null, null, false, null)).thenReturn(List.of(task));
 
-        List<TaskResponse> result = taskService.findAll(user, null, null, false);
+        List<TaskResponse> result = taskService.findAll(user, null, null, false, null);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).completed()).isFalse();
+    }
+
+    @Test
+    void findAll_filtered_by_query_passes_trimmed_value() {
+        when(repository.findFiltered(user, null, null, null, "comprar")).thenReturn(List.of(task));
+
+        List<TaskResponse> result = taskService.findAll(user, null, null, null, "  comprar  ");
+
+        assertThat(result).hasSize(1);
+        verify(repository).findFiltered(user, null, null, null, "comprar");
+    }
+
+    @Test
+    void findAll_blank_query_treated_as_null() {
+        when(repository.findFiltered(user, null, null, null, null)).thenReturn(List.of(task));
+
+        taskService.findAll(user, null, null, null, "   ");
+
+        verify(repository).findFiltered(user, null, null, null, null);
     }
 
     @Test

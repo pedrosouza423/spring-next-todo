@@ -28,8 +28,9 @@ public class TaskController extends BaseController {
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) Priority priority,
             @RequestParam(required = false) Boolean completed,
+            @RequestParam(required = false) String q,
             Authentication auth) {
-        return service.findAll(currentUser(auth), categoryId, priority, completed);
+        return service.findAll(currentUser(auth), categoryId, priority, completed, q);
     }
 
     @GetMapping("/{id}")
