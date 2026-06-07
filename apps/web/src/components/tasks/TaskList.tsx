@@ -41,16 +41,20 @@ export function TaskList({ initialTasks, categories }: TaskListProps) {
       mounted.current = true;
       return;
     }
+    let cancelled = false;
     api.tasks.list({
       categoryId: filterCategoryId ?? undefined,
       priority: filterPriority ?? undefined,
       completed: filterCompleted ?? undefined,
       q: filterQuery || undefined,
-    }).then(setTasks);
+    })
+      .then((data) => { if (!cancelled) setTasks(data); })
+      .catch((err) => { if (!cancelled) console.error(err); });
+    return () => { cancelled = true; };
   }, [filterCategoryId, filterPriority, filterCompleted, filterQuery]);
 
   function matchesSearch(t: Task) {
-    const q = filterQuery.toLowerCase();
+    const q = searchInput.trim().toLowerCase();
     if (!q) return true;
     return (
       t.title.toLowerCase().includes(q) ||

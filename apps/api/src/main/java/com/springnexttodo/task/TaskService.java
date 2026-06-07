@@ -23,11 +23,15 @@ public class TaskService {
     }
 
     public List<TaskResponse> findAll(User user, Long categoryId, Priority priority, Boolean completed, String q) {
-        String query = (q != null && !q.isBlank()) ? q.trim() : null;
+        String query = (q != null && !q.isBlank()) ? escapeLike(q.trim()) : null;
         return repository.findFiltered(user, categoryId, priority, completed, query)
                 .stream()
                 .map(TaskResponse::from)
                 .toList();
+    }
+
+    private static String escapeLike(String s) {
+        return s.replace("!", "!!").replace("%", "!%").replace("_", "!_");
     }
 
     public TaskResponse findById(Long id, User user) {

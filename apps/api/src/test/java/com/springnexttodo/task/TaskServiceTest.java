@@ -124,6 +124,33 @@ class TaskServiceTest {
     }
 
     @Test
+    void findAll_query_escapes_like_wildcards() {
+        when(repository.findFiltered(user, null, null, null, "100!%")).thenReturn(List.of(task));
+
+        taskService.findAll(user, null, null, null, "100%");
+
+        verify(repository).findFiltered(user, null, null, null, "100!%");
+    }
+
+    @Test
+    void findAll_query_escapes_underscore_wildcard() {
+        when(repository.findFiltered(user, null, null, null, "task!_1")).thenReturn(List.of(task));
+
+        taskService.findAll(user, null, null, null, "task_1");
+
+        verify(repository).findFiltered(user, null, null, null, "task!_1");
+    }
+
+    @Test
+    void findAll_query_escapes_exclamation_mark() {
+        when(repository.findFiltered(user, null, null, null, "hello!!world")).thenReturn(List.of(task));
+
+        taskService.findAll(user, null, null, null, "hello!world");
+
+        verify(repository).findFiltered(user, null, null, null, "hello!!world");
+    }
+
+    @Test
     void findById_returns_task_belonging_to_user() {
         when(repository.findByIdAndUser(1L, user)).thenReturn(Optional.of(task));
 
