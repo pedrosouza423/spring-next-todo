@@ -32,6 +32,12 @@ public class GlobalExceptionHandler {
         return ApiError.of(400, "Validation failed", errors);
     }
 
+    @ExceptionHandler(ForbiddenException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ApiError handleForbidden(ForbiddenException ex) {
+        return ApiError.of(403, ex.getMessage());
+    }
+
     @ExceptionHandler(EmailAlreadyUsedException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleEmailConflict(EmailAlreadyUsedException ex) {
