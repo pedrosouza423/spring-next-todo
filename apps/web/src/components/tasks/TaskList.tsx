@@ -5,6 +5,7 @@ import { Task, Category, Priority, api } from "@/lib/api";
 import { TaskItem } from "./TaskItem";
 import { TaskForm } from "./TaskForm";
 import { PRIORITY_LABELS } from "./PriorityBadge";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -20,8 +21,15 @@ export function TaskList({ initialTasks, categories }: TaskListProps) {
   const [filterCategoryId, setFilterCategoryId] = useState<number | null>(null);
   const [filterPriority, setFilterPriority] = useState<Priority | null>(null);
   const [filterCompleted, setFilterCompleted] = useState<boolean | null>(null);
+  const [searchInput, setSearchInput] = useState("");
+  const [filterQuery, setFilterQuery] = useState("");
   const [sortBy, setSortBy] = useState<"dueDate" | "createdAt">("dueDate");
   const mounted = useRef(false);
+
+  useEffect(() => {
+    const id = setTimeout(() => setFilterQuery(searchInput.trim()), 300);
+    return () => clearTimeout(id);
+  }, [searchInput]);
 
   useEffect(() => {
     if (!mounted.current) {
@@ -33,11 +41,21 @@ export function TaskList({ initialTasks, categories }: TaskListProps) {
       categoryId: filterCategoryId ?? undefined,
       priority: filterPriority ?? undefined,
       completed: filterCompleted ?? undefined,
+      q: filterQuery || undefined,
     })
       .then((data) => { if (!cancelled) setTasks(data); })
       .catch((err) => { if (!cancelled) console.error(err); });
     return () => { cancelled = true; };
-  }, [filterCategoryId, filterPriority, filterCompleted]);
+  }, [filterCategoryId, filterPriority, filterCompleted, filterQuery]);
+
+  function matchesSearch(t: Task) {
+    const q = searchInput.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      t.title.toLowerCase().includes(q) ||
+      (t.description?.toLowerCase().includes(q) ?? false)
+    );
+  }
 
   function matchesFilters(t: Task) {
     return (
@@ -49,11 +67,13 @@ export function TaskList({ initialTasks, categories }: TaskListProps) {
 
   function handleCreated(task: Task) {
     if (matchesFilters(task)) setTasks((prev) => [task, ...prev]);
+    if (matchesSearch(task)) setTasks((prev) => [task, ...prev]);
   }
 
   function handleUpdate(updated: Task) {
     setTasks((prev) =>
       matchesFilters(updated)
+      matchesSearch(updated)
         ? prev.map((t) => (t.id === updated.id ? updated : t))
         : prev.filter((t) => t.id !== updated.id)
     );
@@ -76,11 +96,19 @@ export function TaskList({ initialTasks, categories }: TaskListProps) {
   const pending = sorted.filter((t) => !t.completed);
   const done = sorted.filter((t) => t.completed);
 
-  const anyFilter = filterCategoryId != null || filterPriority != null || filterCompleted != null;
+  const anyFilter = filterCategoryId != null || filterPriority != null || filterCompleted != null || filterQuery !== "";
 
   return (
     <div className="flex flex-col gap-6">
       <TaskForm onCreated={handleCreated} categories={categories} />
+
+      <Input
+        type="search"
+        placeholder="Buscar tarefas..."
+        aria-label="Buscar tarefas"
+        value={searchInput}
+        onChange={(e) => setSearchInput(e.target.value)}
+      />
 
       <div className="flex items-center justify-end">
         <select

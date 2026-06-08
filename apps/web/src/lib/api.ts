@@ -49,13 +49,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   tasks: {
-    list: (filters?: { categoryId?: number; priority?: Priority; completed?: boolean }) => {
+    list: (filters?: { categoryId?: number; priority?: Priority; completed?: boolean; q?: string }) => {
       const qs = new URLSearchParams();
       if (filters?.categoryId != null) qs.set("categoryId", String(filters.categoryId));
       if (filters?.priority != null) qs.set("priority", filters.priority);
       if (filters?.completed != null) qs.set("completed", String(filters.completed));
-      const q = qs.toString();
-      return request<Task[]>(`/tasks${q ? `?${q}` : ""}`);
+      if (filters?.q != null && filters.q !== "") qs.set("q", filters.q);
+      const query = qs.toString();
+      return request<Task[]>(`/tasks${query ? `?${query}` : ""}`);
     },
     get: (id: number) => request<Task>(`/tasks/${id}`),
     create: (data: { title: string; description?: string; categoryId?: number; dueDate?: string; priority?: Priority }) =>
