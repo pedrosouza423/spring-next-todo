@@ -17,5 +17,7 @@ public record TaskRequest(
 
     LocalDate dueDate,
 
-    Priority priority
+    Priority priority,
+
+    Long listId
 ) {}

@@ -28,6 +28,9 @@ public class TaskList {
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 
+    @Column(nullable = false)
+    private boolean isDefault = false;
+
     @CreatedDate
     @Column(updatable = false)
     private Instant createdAt;
@@ -40,6 +43,8 @@ public class TaskList {
     public void setName(String name) { this.name = name; }
     public User getOwner() { return owner; }
     public void setOwner(User owner) { this.owner = owner; }
+    public boolean isDefault() { return isDefault; }
+    public void setDefault(boolean isDefault) { this.isDefault = isDefault; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 }

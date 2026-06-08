@@ -16,7 +16,8 @@ public record TaskResponse(
     Instant updatedAt,
     CategoryResponse category,
     LocalDate dueDate,
-    Priority priority
+    Priority priority,
+    Long listId
 ) {
     public static TaskResponse from(Task task) {
         return new TaskResponse(
@@ -28,7 +29,8 @@ public record TaskResponse(
             task.getUpdatedAt(),
             task.getCategory() != null ? CategoryResponse.from(task.getCategory()) : null,
             task.getDueDate(),
-            task.getPriority()
+            task.getPriority(),
+            task.getTaskList() != null ? task.getTaskList().getId() : null
         );
     }
 }

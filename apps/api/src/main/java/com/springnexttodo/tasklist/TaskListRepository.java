@@ -20,4 +20,6 @@ public interface TaskListRepository extends JpaRepository<TaskList, Long> {
     List<TaskList> findAllAccessibleByUser(@Param("user") User user);
 
     Optional<TaskList> findByOwnerAndNameIgnoreCase(User owner, String name);
+
+    Optional<TaskList> findByOwnerAndIsDefault(User owner, boolean isDefault);
 }
