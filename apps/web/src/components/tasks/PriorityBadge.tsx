@@ -8,7 +8,7 @@ interface PriorityBadgeProps {
   priority: Priority;
 }
 
-const PRIORITY_LABELS: Record<Priority, string> = {
+export const PRIORITY_LABELS: Record<Priority, string> = {
   LOW: "Baixa",
   MEDIUM: "Média",
   HIGH: "Alta",
