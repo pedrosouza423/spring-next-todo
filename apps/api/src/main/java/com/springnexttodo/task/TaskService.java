@@ -61,7 +61,7 @@ public class TaskService {
                 ? categoryService.getEntityById(req.categoryId(), user)
                 : null);
         task.setDueDate(req.dueDate());
-        task.setPriority(req.priority() != null ? req.priority() : Priority.MEDIUM);
+        task.setPriority(req.priority() != null ? req.priority() : task.getPriority());
         return TaskResponse.from(repository.save(task));
     }
 

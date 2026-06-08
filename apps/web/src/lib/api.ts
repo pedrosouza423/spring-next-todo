@@ -52,7 +52,7 @@ export const api = {
     list: (filters?: { categoryId?: number; priority?: Priority; completed?: boolean; q?: string }) => {
       const qs = new URLSearchParams();
       if (filters?.categoryId != null) qs.set("categoryId", String(filters.categoryId));
-      if (filters?.priority) qs.set("priority", filters.priority);
+      if (filters?.priority != null) qs.set("priority", filters.priority);
       if (filters?.completed != null) qs.set("completed", String(filters.completed));
       if (filters?.q != null && filters.q !== "") qs.set("q", filters.q);
       const query = qs.toString();

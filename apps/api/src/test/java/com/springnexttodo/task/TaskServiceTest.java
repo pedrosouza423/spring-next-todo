@@ -259,6 +259,18 @@ class TaskServiceTest {
     }
 
     @Test
+    void update_without_priority_preserves_existing_priority() {
+        task.setPriority(Priority.HIGH);
+        when(repository.findByIdAndUser(1L, user)).thenReturn(Optional.of(task));
+        when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        TaskRequest req = new TaskRequest("Updated title", null, null, null, null);
+        TaskResponse response = taskService.update(1L, req, user);
+
+        assertThat(response.priority()).isEqualTo(Priority.HIGH);
+    }
+
+    @Test
     void delete_task_of_other_user() {
         when(repository.findByIdAndUser(99L, user)).thenReturn(Optional.empty());
 

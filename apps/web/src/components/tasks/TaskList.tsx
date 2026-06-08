@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Task, Category, Priority, api } from "@/lib/api";
 import { TaskItem } from "./TaskItem";
 import { TaskForm } from "./TaskForm";
+import { PRIORITY_LABELS } from "./PriorityBadge";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -12,12 +13,6 @@ interface TaskListProps {
   initialTasks: Task[];
   categories: Category[];
 }
-
-const PRIORITY_LABELS: Record<Priority, string> = {
-  LOW: "Baixa",
-  MEDIUM: "Média",
-  HIGH: "Alta",
-};
 
 const PRIORITIES: Priority[] = ["LOW", "MEDIUM", "HIGH"];
 
@@ -62,12 +57,22 @@ export function TaskList({ initialTasks, categories }: TaskListProps) {
     );
   }
 
+  function matchesFilters(t: Task) {
+    return (
+      (filterPriority === null || t.priority === filterPriority) &&
+      (filterCompleted === null || t.completed === filterCompleted) &&
+      (filterCategoryId === null || t.category?.id === filterCategoryId)
+    );
+  }
+
   function handleCreated(task: Task) {
+    if (matchesFilters(task)) setTasks((prev) => [task, ...prev]);
     if (matchesSearch(task)) setTasks((prev) => [task, ...prev]);
   }
 
   function handleUpdate(updated: Task) {
     setTasks((prev) =>
+      matchesFilters(updated)
       matchesSearch(updated)
         ? prev.map((t) => (t.id === updated.id ? updated : t))
         : prev.filter((t) => t.id !== updated.id)
