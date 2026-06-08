@@ -48,6 +48,14 @@ export function TaskList({ initialTasks, categories }: TaskListProps) {
     return () => { cancelled = true; };
   }, [filterCategoryId, filterPriority, filterCompleted, filterQuery]);
 
+  function matchesFilters(t: Task) {
+    return (
+      (filterPriority === null || t.priority === filterPriority) &&
+      (filterCompleted === null || t.completed === filterCompleted) &&
+      (filterCategoryId === null || t.category?.id === filterCategoryId)
+    );
+  }
+
   function matchesSearch(t: Task) {
     const q = searchInput.trim().toLowerCase();
     if (!q) return true;
@@ -57,23 +65,13 @@ export function TaskList({ initialTasks, categories }: TaskListProps) {
     );
   }
 
-  function matchesFilters(t: Task) {
-    return (
-      (filterPriority === null || t.priority === filterPriority) &&
-      (filterCompleted === null || t.completed === filterCompleted) &&
-      (filterCategoryId === null || t.category?.id === filterCategoryId)
-    );
-  }
-
   function handleCreated(task: Task) {
-    if (matchesFilters(task)) setTasks((prev) => [task, ...prev]);
-    if (matchesSearch(task)) setTasks((prev) => [task, ...prev]);
+    if (matchesFilters(task) && matchesSearch(task)) setTasks((prev) => [task, ...prev]);
   }
 
   function handleUpdate(updated: Task) {
     setTasks((prev) =>
-      matchesFilters(updated)
-      matchesSearch(updated)
+      matchesFilters(updated) && matchesSearch(updated)
         ? prev.map((t) => (t.id === updated.id ? updated : t))
         : prev.filter((t) => t.id !== updated.id)
     );
