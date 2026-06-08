@@ -316,6 +316,18 @@ class TaskServiceTest {
     }
 
     @Test
+    void update_without_priority_preserves_existing_priority() {
+        task.setPriority(Priority.HIGH);
+        when(repository.findById(1L)).thenReturn(Optional.of(task));
+        when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        TaskRequest req = new TaskRequest("Updated title", null, null, null, null, null);
+        TaskResponse response = taskService.update(1L, req, user);
+
+        assertThat(response.priority()).isEqualTo(Priority.HIGH);
+    }
+
+    @Test
     void create_requires_editor_role_on_list() {
         TaskRequest req = new TaskRequest("Task", null, null, null, null, null);
         when(listRepository.findByOwnerAndIsDefault(user, true)).thenReturn(Optional.of(defaultList));
